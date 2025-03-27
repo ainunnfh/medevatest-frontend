@@ -1,28 +1,43 @@
-import React from "react";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Form, Button, Dropdown, InputGroup, Table } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { BsThreeDotsVertical, BsSearch, BsArrowRight } from "react-icons/bs";
 import { FaPlus, FaCopy } from "react-icons/fa";
+import axios from "axios";
 
 const EmployeeData = ({ onAddEmployee }) => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("AKTIF");
+  const [employees, setEmployees] = useState([]);
 
-  const employees = [
-    { id: 1, name: "Guntoro Putra Wibowo", role: "Perawat", status: "Aktif" },
-    { id: 2, name: "asadsad", role: "Lainnya", status: "Aktif" },
-    { id: 3, name: "as@as!1", role: "Lainnya", status: "Aktif" },
-    { id: 4, name: "Fifi Cantik", role: "Perawat", status: "Aktif" },
-    { id: 5, name: "Kemei Alkaline", role: "Lainnya", status: "Aktif" },
-  ];
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
 
-  const filteredEmployees = employees.filter(
-    (employee) =>
-      employee.name.toLowerCase().includes(search.toLowerCase()) &&
-      (statusFilter === "SEMUA" ||
-        employee.status.toUpperCase() === statusFilter)
-  );
+  const fetchEmployees = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/employee");
+
+      const formattedData = response.data.map((emp) => ({
+        ...emp,
+        status: emp.contract_end_date ? "NON-AKTIF" : "AKTIF",
+      }));
+
+      setEmployees(formattedData);
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+    }
+  };
+
+  const filteredEmployees = employees.filter((emp) => {
+    const status = statusFilter === "SEMUA" || emp.status === statusFilter;
+    const searched =
+      emp.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+      emp.tipe?.toLowerCase().includes(search.toLowerCase());
+
+    return status && searched;
+  });
+
   return (
     <div
       className="container mt-4 p-4 bg-white shadow rounded"
@@ -94,12 +109,20 @@ const EmployeeData = ({ onAddEmployee }) => {
               ) : (
                 filteredEmployees.map((employee) => (
                   <tr key={employee.id}>
-                    <td className="text-center">{employee.id}</td>
+                    <td className="text-center">
+                      {employees.indexOf(employee) + 1}
+                    </td>
                     <td>
-                      <div className="fw-bold">{employee.name}</div>
-                      <div className="text-muted">{employee.role}</div>
+                      <div className="fw-bold">{employee.full_name}</div>
+                      <div
+                        className="text-secondary"
+                        style={{ fontSize: "smaller" }}
+                      >
+                        {employee.tipe}
+                      </div>
                       <span className="badge bg-success mt-1">
-                        {employee.status}
+                        {employee.status[0].toUpperCase() +
+                          employee.status?.slice(1).toLowerCase()}
                       </span>
                     </td>
                     <td
