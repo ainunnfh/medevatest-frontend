@@ -13,7 +13,7 @@ const Sidebar = ({ children }) => {
   return (
     <>
       <div
-        className="bg-white shadow-lg position-fixed start-0 top-0 min-vh-100 d-flex flex-column justify-content-around align-items-center pt-4 px-3"
+        className="bg-white shadow-lg position-fixed start-0 top-0 min-vh-100 d-flex flex-column justify-content-around align-items-center pt-4 px-3 text-secondary"
         style={{ width: "110px", marginTop: "60px", paddingBottom: "20px" }}
       >
         <div className="text-center">
