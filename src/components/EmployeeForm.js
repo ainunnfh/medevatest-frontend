@@ -44,18 +44,27 @@ const EmployeeForm = () => {
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
 
-    if (type === "checkbox") {
-      setFormData((prev) => ({
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value, // Update langsung berdasarkan name input
+    }));
+  };
+
+  const handleCheckboxChange = (e) => {
+    const { value, checked } = e.target;
+
+    setFormData((prev) => {
+      const currentTipe = typeof prev.tipe === "string" ? [] : prev.tipe;
+
+      return {
         ...prev,
         tipe: checked
-          ? [...prev.tipe, value]
-          : prev.tipe.filter((item) => item !== value),
-      }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
+          ? [...currentTipe, value] // Tambahkan tipe ke array
+          : currentTipe.filter((t) => t !== value), // Hapus jika uncheck
+      };
+    });
   };
 
   const handleRadioChange = (e) => {
@@ -69,7 +78,7 @@ const EmployeeForm = () => {
   const handleOtherInputChange = (e) => {
     setFormData((prev) => ({
       ...prev,
-      type_other: e.target.value,
+      tipe_other: e.target.value,
     }));
   };
 
@@ -89,8 +98,8 @@ const EmployeeForm = () => {
 
     try {
       await validationSchema.validate(formattedData, { abortEarly: false });
-      await axios.post("/api/employees", formattedData);
-      alert("Data berhasil disimpan!");
+      await axios.post("http://localhost:5000/api/employee", formattedData);
+      console.log(formattedData);
       setFormData(initialFormData);
       setErrors({});
 
@@ -360,11 +369,10 @@ const EmployeeForm = () => {
               )}
             </Form.Group>
 
-            <Form.Group>
-              <Form.Label>
-                Tipe <span className="text-danger">*</span>
-              </Form.Label>
+            <Form.Group className="mb-3">
+              <Form.Label>Tipe</Form.Label>
               <Row>
+                {/* Checkbox Group */}
                 <Col>
                   {[
                     "Manager",
@@ -373,32 +381,36 @@ const EmployeeForm = () => {
                     "Manajemen",
                     "Finance",
                     "Purchasing",
-                  ].map((type) => (
+                  ].map((tipe) => (
                     <Form.Check
-                      key={type}
+                      key={tipe}
                       type="checkbox"
-                      label={type}
-                      name="tipe"
-                      value={type}
-                      onChange={handleChange}
-                      isInvalid={!!errors.tipe}
+                      id={tipe.toLowerCase()}
+                      label={tipe}
+                      value={tipe}
+                      checked={formData.tipe.includes(tipe)}
+                      onChange={handleCheckboxChange}
+                      autoComplete="off"
                     />
                   ))}
                 </Col>
 
+                {/* Radio Group */}
                 <Col>
-                  {["Perawat", "Bidan", "Dokter"].map((type) => (
+                  {["Perawat", "Bidan", "Dokter"].map((tipe) => (
                     <Form.Check
-                      key={type}
+                      key={tipe}
                       type="radio"
-                      label={type}
+                      id={tipe.toLowerCase()}
+                      label={tipe}
                       name="tipe"
-                      value={type}
-                      checked={formData.tipe.includes(type)}
+                      value={tipe}
+                      checked={formData.tipe === tipe}
                       onChange={handleRadioChange}
-                      isInvalid={!!errors.tipe}
+                      autoComplete="off"
                     />
                   ))}
+                  {/* Opsi Lainnya dengan Input */}
                   <Form.Check
                     type="radio"
                     id="lainnya"
@@ -408,7 +420,6 @@ const EmployeeForm = () => {
                     checked={formData.tipe === "Lainnya"}
                     onChange={handleRadioChange}
                     autoComplete="off"
-                    isInvalid={!!errors.tipe}
                   />
                   {formData.tipe === "Lainnya" && (
                     <Form.Control
@@ -416,15 +427,11 @@ const EmployeeForm = () => {
                       placeholder="Masukkan tipe lainnya"
                       name="type_other"
                       className="mt-2"
-                      value={formData.type_other || ""}
+                      value={formData.tipe_other || ""}
                       onChange={handleOtherInputChange}
                       autoComplete="off"
-                      isInvalid={!!errors.type_other}
                     />
                   )}
-                  <Form.Text className="text-danger">
-                    {errors.type_other}
-                  </Form.Text>
                 </Col>
               </Row>
             </Form.Group>
