@@ -5,7 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { BsThreeDotsVertical, BsSearch, BsArrowRight } from "react-icons/bs";
 import { FaPlus, FaCopy } from "react-icons/fa";
 
-const EmployeeData = () => {
+const EmployeeData = ({ onAddEmployee }) => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("AKTIF");
 
@@ -35,7 +35,7 @@ const EmployeeData = () => {
             <BsThreeDotsVertical />
           </Dropdown.Toggle>
           <Dropdown.Menu align="end">
-            <Dropdown.Item href="#">
+            <Dropdown.Item onClick={onAddEmployee}>
               <FaPlus className="me-2 text-secondary" /> Tambah Karyawan
             </Dropdown.Item>
             <Dropdown.Item href="#">
