@@ -1,17 +1,6 @@
 import React from "react";
 import { useState } from "react";
-import {
-  Container,
-  Row,
-  Col,
-  Card,
-  Form,
-  Button,
-  Dropdown,
-  InputGroup,
-  Table,
-  Badge,
-} from "react-bootstrap";
+import { Form, Button, Dropdown, InputGroup, Table } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { BsThreeDotsVertical, BsSearch, BsArrowRight } from "react-icons/bs";
 import { FaPlus, FaCopy } from "react-icons/fa";
@@ -39,7 +28,6 @@ const EmployeeData = () => {
       className="container mt-4 p-4 bg-white shadow rounded"
       style={{ maxWidth: "600px" }}
     >
-      {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <h6 className="fw-bold">DATA KARYAWAN & TENAGA KESEHATAN</h6>
         <Dropdown>
@@ -56,13 +44,9 @@ const EmployeeData = () => {
           </Dropdown.Menu>
         </Dropdown>
       </div>
-
-      {/* Dropdown Filter Karyawan */}
       <Form.Select className="mb-3">
         <option>Semua Karyawan</option>
       </Form.Select>
-
-      {/* Filter Status */}
       <div className="btn-group w-100 mb-3 border">
         {["SEMUA", "AKTIF", "NON-AKTIF"].map((s) => (
           <Button
@@ -78,7 +62,6 @@ const EmployeeData = () => {
         ))}
       </div>
 
-      {/* Input Pencarian */}
       <InputGroup className="mb-3">
         <InputGroup.Text>
           <BsSearch />

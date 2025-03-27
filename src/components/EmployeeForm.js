@@ -1,14 +1,5 @@
 import React from "react";
-import {
-  Container,
-  Row,
-  Col,
-  Card,
-  Form,
-  Button,
-  Dropdown,
-  Table,
-} from "react-bootstrap";
+import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const EmployeeForm = () => {
@@ -17,7 +8,7 @@ const EmployeeForm = () => {
       <h6 className="mb-4">FORM TAMBAH KARYAWAN</h6>
       <Form>
         <Row>
-          {/* Kolom Kiri */}
+          {/* Left Column */}
           <Col md={6}>
             <Form.Group className="mb-3">
               <Form.Label>Nama Lengkap</Form.Label>
@@ -106,7 +97,7 @@ const EmployeeForm = () => {
             </Form.Group>
           </Col>
 
-          {/* Kolom Kanan */}
+          {/*  Right Column */}
           <Col md={6}>
             <Form.Group className="mb-3">
               <Form.Label>Username</Form.Label>
@@ -175,7 +166,6 @@ const EmployeeForm = () => {
           </Col>
         </Row>
 
-        {/* Tombol Simpan */}
         <div className="text-end">
           <Button variant="primary" size="lg">
             Simpan
