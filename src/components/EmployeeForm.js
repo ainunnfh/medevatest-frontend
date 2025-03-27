@@ -5,7 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
 
 const EmployeeForm = () => {
-  const [formData, setFormData] = useState({
+  const initialFormData = {
     full_name: "",
     nik: "",
     gender: "",
@@ -25,7 +25,9 @@ const EmployeeForm = () => {
     contract_end_date: "",
     marital_status: "",
     bpjs_doctor_code: "",
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -46,30 +48,46 @@ const EmployeeForm = () => {
     setFormData((prev) => ({
       ...prev,
       tipe: e.target.value,
-      tipe_other: e.target.value === "Lainnya" ? prev.tipe_other : "",
+      type_other: e.target.value === "Lainnya" ? prev.type_other : "",
     }));
   };
 
   const handleOtherInputChange = (e) => {
     setFormData((prev) => ({
       ...prev,
-      tipe_other: e.target.value,
+      type_other: e.target.value,
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const formatDate = (date) => {
+    if (!date || date.trim() === "") return null;
+    return new Date(date).toISOString().split("T")[0]; // Format YYYY-MM-DD
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const formattedData = {
+      ...formData,
+      date_of_birth: formatDate(formData.date_of_birth),
+      contract_start_date: formatDate(formData.contract_start_date),
+      contract_end_date: formatDate(formData.contract_end_date),
+    };
+
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/employees",
-        formData
+        "http://localhost:5000/api/employee",
+        formattedData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        },
+        setFormData(initialFormData)
       );
-      console.log(response);
+
       alert("Data berhasil disimpan!");
-      console.log(response.data);
     } catch (error) {
-      console.error("Terjadi kesalahan:", error);
-      alert("Gagal menyimpan data.");
+      alert("Terjadi kesalahan saat menyimpan data");
     }
   };
 
@@ -153,7 +171,9 @@ const EmployeeForm = () => {
                 value={formData.date_of_birth || ""}
                 name="date_of_birth"
                 id="date_of_birth"
-                onChange={handleChange}
+                onChange={(e) =>
+                  setFormData({ ...formData, date_of_birth: e.target.value })
+                }
                 autoComplete="off"
               />
             </Form.Group>
@@ -183,11 +203,9 @@ const EmployeeForm = () => {
                     autoComplete="off"
                   >
                     <option>Pilih Provinsi</option>
-                    <option value="Aceh">Aceh</option>
-                    <option value="Sumatera Utara">Sumatera Utara</option>
-                    <option value="Sumatera Barat">Sumatera Barat</option>
-                    <option value="Riau">Riau</option>
-                    <option value="Kepulauan Riau">Kepulauan Riau</option>
+                    <option value="Jawa Barat">Jawa Barat</option>
+                    <option value="Jawa Tengah">Jawa Tengah</option>
+                    <option value="Jawa Timur">Jawa Timur</option>
                   </Form.Select>
                 </Form.Group>
               </Col>
@@ -202,12 +220,9 @@ const EmployeeForm = () => {
                     autoComplete="off"
                   >
                     <option>Pilih Kota/Kabupaten</option>
-                    <option value="Kabupaten Aceh Barat">Aceh Barat</option>
-                    <option value="Kabupaten Aceh Besar">Aceh Besar</option>
-                    <option value="Kabupaten Aceh Singkawang">
-                      Aceh Singkawang
-                    </option>
-                    <option value="Kabupaten Aceh Tengah">Aceh Tengah</option>
+                    <option value="Kota Bogor">Kota Bogor</option>
+                    <option value="Semarang">Semarang</option>
+                    <option value="Surabaya">Surabaya</option>
                   </Form.Select>
                 </Form.Group>
               </Col>
@@ -225,11 +240,9 @@ const EmployeeForm = () => {
                     autoComplete="off"
                   >
                     <option>Pilih Kecamatan</option>
-                    <option value="Kecamatan Aceh Barat">Aceh Barat</option>
-                    <option value="Kecamatan Aceh Barat Daya">
-                      Aceh Barat Daya
-                    </option>
-                    <option value="Kecamatan Aceh Besar">Aceh Besar</option>
+                    <option value="Burneh">Burneh</option>
+                    <option value="Tunjung">Tunjung</option>
+                    <option value="Citereup">Citereup</option>
                   </Form.Select>
                 </Form.Group>
               </Col>
@@ -244,9 +257,9 @@ const EmployeeForm = () => {
                     autoComplete="off"
                   >
                     <option>Pilih Kelurahan</option>
-                    <option value="Kelurahan Aceh Barat">Aceh Barat</option>
-                    <option value="Kelurahan Aceh Besar">Aceh Besar</option>
-                    <option value="Kelurahan Aceh Jaya">Aceh Jaya</option>
+                    <option value="Cileungsi">Cileungsi</option>
+                    <option value="Jendral Sudirman">Jendral Sudirman</option>
+                    <option value="Kebun Jeruk">Kebun Jeruk</option>
                   </Form.Select>
                 </Form.Group>
               </Col>
@@ -357,9 +370,9 @@ const EmployeeForm = () => {
                     <Form.Control
                       type="text"
                       placeholder="Masukkan tipe lainnya"
-                      name="tipe_other"
+                      name="type_other"
                       className="mt-2"
-                      value={formData.tipe_other || ""}
+                      value={formData.type_other || ""}
                       onChange={handleOtherInputChange}
                       autoComplete="off"
                     />
@@ -377,7 +390,12 @@ const EmployeeForm = () => {
                 id="contract_start_date"
                 name="contract_start_date"
                 value={formData.contract_start_date || ""}
-                onChange={handleChange}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    contract_start_date: e.target.value,
+                  })
+                }
                 autoComplete="off"
               />
             </Form.Group>
@@ -391,7 +409,12 @@ const EmployeeForm = () => {
                 name="contract_end_date"
                 id="contract_end_date"
                 value={formData.contract_end_date || ""}
-                onChange={handleChange}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    contract_end_date: e.target.value,
+                  })
+                }
                 autoComplete="off"
               />
             </Form.Group>
@@ -406,9 +429,9 @@ const EmployeeForm = () => {
                 autoComplete="off"
               >
                 <option>Pilih Status</option>
-                <option>Belum Menikah</option>
-                <option>Menikah</option>
-                <option>Cerai</option>
+                <option value={"Lajang"}>Lajang</option>
+                <option value={"Menikah"}>Menikah</option>
+                <option value={"Cerai"}>Cerai</option>
               </Form.Select>
             </Form.Group>
 
@@ -433,7 +456,7 @@ const EmployeeForm = () => {
         </Row>
 
         <div className="text-end">
-          <Button variant="primary" size="lg">
+          <Button variant="primary" size="lg" type="submit">
             Simpan
           </Button>
         </div>
