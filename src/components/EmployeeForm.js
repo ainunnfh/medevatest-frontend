@@ -1,8 +1,21 @@
 import React from "react";
 import { useState } from "react";
+import * as yup from "yup";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
+
+const validationSchema = yup.object().shape({
+  full_name: yup.string().required(),
+  nik: yup
+    .string()
+    .required()
+    .matches(/^\d{16}$/, "NIK harus 16 digit angka"),
+  username: yup.string().required(),
+  email: yup.string().email().required("Format email tidak valid"),
+  password: yup.string().min(6).required("Password minimal 6 karakter"),
+  tipe: yup.array().min(1, "Minimal pilih satu tipe"),
+});
 
 const EmployeeForm = () => {
   const initialFormData = {
@@ -28,6 +41,7 @@ const EmployeeForm = () => {
   };
 
   const [formData, setFormData] = useState(initialFormData);
+  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -74,20 +88,21 @@ const EmployeeForm = () => {
     };
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/employee",
-        formattedData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-        setFormData(initialFormData)
-      );
+      await validationSchema.validate(formattedData, { abortEarly: false });
+      await axios.post("/api/employees", formattedData);
+      alert("Data berhasil disimpan!");
+      setFormData(initialFormData);
+      setErrors({});
 
       alert("Data berhasil disimpan!");
-    } catch (error) {
-      alert("Terjadi kesalahan saat menyimpan data");
+    } catch (err) {
+      if (err instanceof yup.ValidationError) {
+        const newErrors = {};
+        err.inner.forEach((error) => {
+          newErrors[error.path] = error.message;
+        });
+        setErrors(newErrors);
+      }
     }
   };
 
@@ -99,7 +114,9 @@ const EmployeeForm = () => {
           {/* Left Column */}
           <Col md={6}>
             <Form.Group className="mb-3">
-              <Form.Label htmlFor="full_name">Nama Lengkap</Form.Label>
+              <Form.Label htmlFor="full_name">
+                Nama Lengkap <span className="text-danger">*</span>
+              </Form.Label>
               <Form.Control
                 type="text"
                 placeholder="Nama Lengkap"
@@ -108,20 +125,27 @@ const EmployeeForm = () => {
                 value={formData.full_name || ""}
                 onChange={handleChange}
                 autoComplete="off"
+                isInvalid={!!errors.full_name}
               />
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label htmlFor="nik">No. Kartu Identitas</Form.Label>
+              <Form.Label htmlFor="nik">
+                No. Kartu Identitas <span className="text-danger">*</span>
+              </Form.Label>
               <Form.Control
-                type="text"
+                type="number"
                 placeholder="No. Kartu Identitas"
                 id="nik"
                 name="nik"
                 value={formData.nik || ""}
                 onChange={handleChange}
                 autoComplete="off"
+                isInvalid={!!errors.nik}
               />
+              {errors.nik && (
+                <Form.Text className="text-danger">{errors.nik}</Form.Text>
+              )}
             </Form.Group>
 
             <Form.Group className="mb-3">
@@ -283,7 +307,9 @@ const EmployeeForm = () => {
           {/* Right Column */}
           <Col md={6}>
             <Form.Group className="mb-3">
-              <Form.Label htmlFor="username">Username</Form.Label>
+              <Form.Label htmlFor="username">
+                Username <span className="text-danger">*</span>
+              </Form.Label>
               <Form.Control
                 type="text"
                 placeholder="Username"
@@ -292,11 +318,14 @@ const EmployeeForm = () => {
                 value={formData.username || ""}
                 onChange={handleChange}
                 autoComplete="off"
+                isInvalid={!!errors.username}
               />
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label htmlFor="email">Email</Form.Label>
+              <Form.Label htmlFor="email">
+                Email <span className="text-danger">*</span>
+              </Form.Label>
               <Form.Control
                 type="email"
                 placeholder="Email"
@@ -305,11 +334,17 @@ const EmployeeForm = () => {
                 value={formData.email || ""}
                 onChange={handleChange}
                 autoComplete="off"
+                isInvalid={!!errors.email}
               />
+              {errors.email && (
+                <Form.Text className="text-danger">{errors.email}</Form.Text>
+              )}
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label htmlFor="password">Password</Form.Label>
+              <Form.Label htmlFor="password">
+                Password <span className="text-danger">*</span>
+              </Form.Label>
               <Form.Control
                 type="password"
                 placeholder="Password"
@@ -318,11 +353,17 @@ const EmployeeForm = () => {
                 value={formData.password || ""}
                 onChange={handleChange}
                 autoComplete="off"
+                isInvalid={!!errors.password}
               />
+              {errors.password && (
+                <Form.Text className="text-danger">{errors.password}</Form.Text>
+              )}
             </Form.Group>
 
             <Form.Group>
-              <Form.Label>Type</Form.Label>
+              <Form.Label>
+                Tipe <span className="text-danger">*</span>
+              </Form.Label>
               <Row>
                 <Col>
                   {[
@@ -340,6 +381,7 @@ const EmployeeForm = () => {
                       name="tipe"
                       value={type}
                       onChange={handleChange}
+                      isInvalid={!!errors.tipe}
                     />
                   ))}
                 </Col>
@@ -354,6 +396,7 @@ const EmployeeForm = () => {
                       value={type}
                       checked={formData.tipe.includes(type)}
                       onChange={handleRadioChange}
+                      isInvalid={!!errors.tipe}
                     />
                   ))}
                   <Form.Check
@@ -365,6 +408,7 @@ const EmployeeForm = () => {
                     checked={formData.tipe === "Lainnya"}
                     onChange={handleRadioChange}
                     autoComplete="off"
+                    isInvalid={!!errors.tipe}
                   />
                   {formData.tipe === "Lainnya" && (
                     <Form.Control
@@ -375,8 +419,12 @@ const EmployeeForm = () => {
                       value={formData.type_other || ""}
                       onChange={handleOtherInputChange}
                       autoComplete="off"
+                      isInvalid={!!errors.type_other}
                     />
                   )}
+                  <Form.Text className="text-danger">
+                    {errors.type_other}
+                  </Form.Text>
                 </Col>
               </Row>
             </Form.Group>
