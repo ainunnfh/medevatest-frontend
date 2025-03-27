@@ -1,5 +1,5 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import * as yup from "yup";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -17,7 +17,7 @@ const validationSchema = yup.object().shape({
   tipe: yup.array().min(1, "Minimal pilih satu tipe"),
 });
 
-const EmployeeForm = () => {
+const EmployeeForm = ({ employeeId, onClose }) => {
   const initialFormData = {
     full_name: "",
     nik: "",
@@ -48,7 +48,7 @@ const EmployeeForm = () => {
 
     setFormData((prev) => ({
       ...prev,
-      [name]: value, // Update langsung berdasarkan name input
+      [name]: value,
     }));
   };
 
@@ -61,8 +61,8 @@ const EmployeeForm = () => {
       return {
         ...prev,
         tipe: checked
-          ? [...currentTipe, value] // Tambahkan tipe ke array
-          : currentTipe.filter((t) => t !== value), // Hapus jika uncheck
+          ? [...currentTipe, value]
+          : currentTipe.filter((t) => t !== value),
       };
     });
   };
@@ -87,6 +87,39 @@ const EmployeeForm = () => {
     return new Date(date).toISOString().split("T")[0]; // Format YYYY-MM-DD
   };
 
+  useEffect(() => {
+    const fetchEmployeeData = async () => {
+      if (employeeId) {
+        try {
+          const response = await axios.get(
+            `http://localhost:5000/api/employee/${employeeId}`
+          );
+          const data = response.data;
+
+          const formattedData = {
+            ...data,
+            gender: data.gender,
+            date_of_birth: data.date_of_birth
+              ? new Date(data.date_of_birth).toISOString().split("T")[0]
+              : "",
+            contract_start_date: data.contract_start_date
+              ? new Date(data.contract_start_date).toISOString().split("T")[0]
+              : "",
+            contract_end_date: data.contract_end_date
+              ? new Date(data.contract_end_date).toISOString().split("T")[0]
+              : "",
+          };
+
+          setFormData(formattedData);
+        } catch (error) {
+          console.error("Error fetching employee data:", error);
+        }
+      }
+    };
+
+    fetchEmployeeData();
+  }, [employeeId]);
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     const formattedData = {
@@ -98,12 +131,22 @@ const EmployeeForm = () => {
 
     try {
       await validationSchema.validate(formattedData, { abortEarly: false });
-      await axios.post("http://localhost:5000/api/employee", formattedData);
+
+      if (employeeId) {
+        await axios.put(
+          `http://localhost:5000/api/employee/${employeeId}`,
+          formattedData
+        );
+        alert("Data berhasil diperbarui!");
+      } else {
+        await axios.post("http://localhost:5000/api/employee", formattedData);
+        alert("Data berhasil disimpan!");
+      }
+
       console.log(formattedData);
       setFormData(initialFormData);
       setErrors({});
-
-      alert("Data berhasil disimpan!");
+      onClose();
     } catch (err) {
       if (err instanceof yup.ValidationError) {
         const newErrors = {};
@@ -117,7 +160,9 @@ const EmployeeForm = () => {
 
   return (
     <Container fluid className="p-4">
-      <h6 className="mb-4">FORM TAMBAH KARYAWAN</h6>
+      <h6 className="mb-4">
+        {employeeId ? "FORM EDIT KARYAWAN" : "FORM TAMBAH KARYAWAN"}
+      </h6>
       <Form onSubmit={handleSubmit}>
         <Row>
           {/* Left Column */}
@@ -167,6 +212,7 @@ const EmployeeForm = () => {
                   name="gender"
                   id="laki-laki"
                   value={"Laki-laki"}
+                  checked={formData.gender === "Laki-laki"}
                   onChange={handleChange}
                   autoComplete="off"
                 />
@@ -177,6 +223,7 @@ const EmployeeForm = () => {
                   id="perempuan"
                   name="gender"
                   value={"Perempuan"}
+                  checked={formData.gender === "Perempuan"}
                   onChange={handleChange}
                   autoComplete="off"
                 />
