@@ -4,11 +4,14 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import { BsThreeDotsVertical, BsSearch, BsArrowRight } from "react-icons/bs";
 import { FaPlus, FaCopy } from "react-icons/fa";
 import axios from "axios";
+import EmployeeForm from "./EmployeeForm";
 
-const EmployeeData = ({ onAddEmployee }) => {
+const EmployeeData = ({ onAddEmployee, onEditClick }) => {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("AKTIF");
   const [employees, setEmployees] = useState([]);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
     fetchEmployees();
@@ -37,6 +40,10 @@ const EmployeeData = ({ onAddEmployee }) => {
 
     return status && searched;
   });
+
+  const handleEdit = (id) => {
+    onEditClick(id);
+  };
 
   return (
     <div
@@ -139,6 +146,7 @@ const EmployeeData = ({ onAddEmployee }) => {
                             backgroundColor: "#6eaff9",
                             borderColor: "#6eaff9",
                           }}
+                          onClick={() => handleEdit(employee.id)}
                         >
                           <BsArrowRight size={18} />
                         </Button>
@@ -149,6 +157,12 @@ const EmployeeData = ({ onAddEmployee }) => {
               )}
             </tbody>
           </Table>
+          {showForm && (
+            <EmployeeForm
+              employee={selectedEmployeeId}
+              onClose={() => setShowForm(false)}
+            />
+          )}
         </div>
       </div>
     </div>
