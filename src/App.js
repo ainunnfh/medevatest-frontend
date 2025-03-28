@@ -17,7 +17,10 @@ function App() {
           <Row>
             <Col md={5} sm={12} className="mb-3">
               <EmployeeData
-                onAddEmployee={() => setShowForm(true)}
+                onAddEmployee={() => {
+                  setSelectedEmployeeId(null);
+                  setShowForm(true);
+                }}
                 onEditClick={(id) => {
                   setSelectedEmployeeId(id);
                   setShowForm(true);

@@ -86,7 +86,9 @@ const EmployeeForm = ({ employeeId, onClose }) => {
 
   useEffect(() => {
     const fetchEmployeeData = async () => {
-      if (employeeId) {
+      if (employeeId === null) {
+        setFormData(initialFormData);
+      } else if (employeeId) {
         try {
           const response = await axios.get(
             `http://localhost:5000/api/employee/${employeeId}`
@@ -138,10 +140,10 @@ const EmployeeForm = ({ employeeId, onClose }) => {
           `http://localhost:5000/api/employee/${employeeId}`,
           formattedData
         );
-        alert("Data berhasil diperbarui!");
+        alert("Data berhasil diperbarui! Refresh untuk melihat data baru");
       } else {
         await axios.post("http://localhost:5000/api/employee", formattedData);
-        alert("Data berhasil disimpan!");
+        alert("Data berhasil disimpan! Refresh untuk melihat data baru");
       }
 
       setFormData(initialFormData);
