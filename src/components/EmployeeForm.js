@@ -7,24 +7,21 @@ import axios from "axios";
 
 const validationSchema = yup.object().shape({
   full_name: yup.string().required(),
-  nik: yup
-    .string()
-    .required()
-    .matches(/^\d{16}$/, "NIK harus 16 digit angka"),
+  nik: yup.number().min(16).required("NIK minimal 16 karakter"),
   username: yup.string().required(),
   email: yup.string().email().required("Format email tidak valid"),
   password: yup.string().min(6).required("Password minimal 6 karakter"),
-  tipe: yup.array().min(1, "Minimal pilih satu tipe"),
+  tipe: yup.array().of(yup.string()).required("Tipe wajib diisi"),
 });
 
 const EmployeeForm = ({ employeeId, onClose }) => {
   const initialFormData = {
     full_name: "",
-    nik: "",
+    nik: 0,
     gender: "",
     place_of_birth: "",
     date_of_birth: "",
-    phone: "",
+    phone: 0,
     province: "",
     subdistrict: "",
     district: "",
@@ -84,7 +81,7 @@ const EmployeeForm = ({ employeeId, onClose }) => {
 
   const formatDate = (date) => {
     if (!date || date.trim() === "") return null;
-    return new Date(date).toISOString().split("T")[0]; // Format YYYY-MM-DD
+    return new Date(date).toISOString().split("T")[0];
   };
 
   useEffect(() => {
@@ -108,6 +105,8 @@ const EmployeeForm = ({ employeeId, onClose }) => {
             contract_end_date: data.contract_end_date
               ? new Date(data.contract_end_date).toISOString().split("T")[0]
               : "",
+            tipe: data.tipe || [],
+            type_other: data.type_other || "",
           };
 
           setFormData(formattedData);
@@ -127,6 +126,8 @@ const EmployeeForm = ({ employeeId, onClose }) => {
       date_of_birth: formatDate(formData.date_of_birth),
       contract_start_date: formatDate(formData.contract_start_date),
       contract_end_date: formatDate(formData.contract_end_date),
+      nik: parseInt(formData.nik),
+      phone: parseInt(formData.phone),
     };
 
     try {
@@ -143,7 +144,6 @@ const EmployeeForm = ({ employeeId, onClose }) => {
         alert("Data berhasil disimpan!");
       }
 
-      console.log(formattedData);
       setFormData(initialFormData);
       setErrors({});
       onClose();
@@ -151,9 +151,10 @@ const EmployeeForm = ({ employeeId, onClose }) => {
       if (err instanceof yup.ValidationError) {
         const newErrors = {};
         err.inner.forEach((error) => {
+          console.log(`Field: ${error.path}, Message: ${error.message}`); // Log each error
           newErrors[error.path] = error.message;
         });
-        setErrors(newErrors);
+        setErrors(newErrors); // Update the state to show the errors on the form
       }
     }
   };
@@ -474,7 +475,7 @@ const EmployeeForm = ({ employeeId, onClose }) => {
                       placeholder="Masukkan tipe lainnya"
                       name="type_other"
                       className="mt-2"
-                      value={formData.tipe_other || ""}
+                      value={formData.type_other || ""}
                       onChange={handleOtherInputChange}
                       autoComplete="off"
                     />
@@ -559,7 +560,7 @@ const EmployeeForm = ({ employeeId, onClose }) => {
 
         <div className="text-end">
           <Button variant="primary" size="lg" type="submit">
-            Simpan
+            {employeeId ? "Edit" : "Simpan"}
           </Button>
         </div>
       </Form>
