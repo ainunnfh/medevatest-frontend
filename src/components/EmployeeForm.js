@@ -460,7 +460,7 @@ const EmployeeForm = ({ employeeId, onClose }) => {
                       autoComplete="off"
                     />
                   ))}
-                  {/* Opsi Lainnya dengan Input */}
+
                   <Form.Check
                     type="radio"
                     id="lainnya"
