@@ -153,10 +153,10 @@ const EmployeeForm = ({ employeeId, onClose }) => {
       if (err instanceof yup.ValidationError) {
         const newErrors = {};
         err.inner.forEach((error) => {
-          console.log(`Field: ${error.path}, Message: ${error.message}`); // Log each error
+          console.log(`Field: ${error.path}, Message: ${error.message}`);
           newErrors[error.path] = error.message;
         });
-        setErrors(newErrors); // Update the state to show the errors on the form
+        setErrors(newErrors);
       }
     }
   };
